@@ -1,0 +1,35 @@
+a {
+    color: #3B5998;
+    text-decoration: none;
+}
+
+body {
+    font-family: arial;
+    font-size: 14px;
+
+}
+
+h1 {
+    font: 32px Georgia, "Times New Roman";
+    position: relative;
+    color: #0094D6;
+    margin: 10px 0;
+    padding: 0;
+    background-color: #f0f4f0
+}
+
+.error {
+    font-family: arial;
+    color: red;
+    font-size: 12px;
+    font-weight: bold;
+
+}
+
+.success {
+    font-family: arial;
+    color: #00eb00;
+    font-size: 12px;
+    font-weight: bold;
+}
+

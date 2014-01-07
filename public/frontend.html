@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-type" content="text/html;charset=UTF-8"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=windows-1251"/>
+    <title>Frontend</title>
+    <link href="css/bootstrap.css" rel="stylesheet">
+    <link href="css/app.css" rel="stylesheet">
+    <script src="js/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/communication.js"></script>
+    <script src="js/requests.js"></script>
+</head>
+
+<body>
+<h1>Global strategy</h1>
+
+
+
+<form name="Authenticate">
+    <input type="text" name="id" value="100500"/>
+    <input type="submit" value="Authenticate"/>
+</form>
+
+<div id="subscribe"></div>
+
+
+<script>
+    var socket = new WebSocket("ws://localhost:8000/backend");
+    socket.onopen = function () {
+        showMessage("Connection established");
+    };
+
+    socket.onclose = function (event) {
+        if (event.wasClean) {
+            showMessage('Connection close ok');
+        } else {
+            showMessage('Connection fail');
+        }
+        showMessage('Code: ' + event.code + ' reason: ' + event.reason);
+    };
+
+    socket.onerror = function (error) {
+        showMessage("Error " + error.message);
+    };
+
+
+//    document.forms.Authenticate.onsubmit = function () {
+//        var outgoingMessage = this.message.value;
+//
+//        socket.send(outgoingMessage);
+//        return false;
+//    };
+    document.forms.Authenticate.onsubmit = function () {
+        var request = new RequestObject();
+
+        request.setRequestType(RT_AUTHENTICATE);
+        request.setRequestData({googleId: this.id.value});
+
+        var jsonRequest = toJson(request);
+
+        showMessage("send : " + jsonRequest);
+        socket.send(jsonRequest);
+        return false;
+    };
+    socket.onmessage = function (event) {
+        var incomingMessage = event.data;
+        showMessage(incomingMessage);
+    };
+
+    function showMessage(message) {
+        var messageElem = document.createElement('div');
+        messageElem.appendChild(document.createTextNode(message));
+        document.getElementById('subscribe').appendChild(messageElem);
+    }
+
+
+</script>
+</body>
+</html>
