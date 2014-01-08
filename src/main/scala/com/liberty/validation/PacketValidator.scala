@@ -18,7 +18,10 @@ trait PacketValidator {
   // TODO : Security token validation
   def validateAuthentication(request: GenericRequest): Boolean = {
     require(request.requestType > 0)
-    request.securityToken.isDefined || request.requestType == RequestType.RT_AUTHENTICATE
+    if (request.securityToken == null && request.requestType == RequestType.RT_AUTHENTICATE)
+      true
+    else
+      request.securityToken.isDefined || request.requestType == RequestType.RT_AUTHENTICATE
   }
 
   def validateSession(request: GenericRequest, session: Option[GameSession]): Boolean = {
