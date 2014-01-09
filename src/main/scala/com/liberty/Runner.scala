@@ -4,6 +4,8 @@ import com.liberty.requests.{GenericRequest, AuthRequest}
 import scala.reflect.runtime.universe._
 import scala.collection.immutable.ListMap
 import com.liberty.helpers.JsonMapper
+import com.liberty.annotation.{Handler, RequestData,}
+import com.liberty.annotation.Data
 
 /**
  * User: Dimitr
@@ -12,34 +14,38 @@ import com.liberty.helpers.JsonMapper
  */
 object Runner extends App {
 
-  def caseClassParamsOf[T: TypeTag]: ListMap[String, Type] = {
-    val tpe = typeOf[T]
-    val constructorSymbol = tpe.declaration(nme.CONSTRUCTOR)
-    val defaultConstructor =
-      if (constructorSymbol.isMethod) constructorSymbol.asMethod
-      else {
-        val ctors = constructorSymbol.asTerm.alternatives
-        ctors.map { _.asMethod }.find { _.isPrimaryConstructor }.get
-      }
-
-    ListMap[String, Type]() ++ defaultConstructor.paramss.reduceLeft(_ ++ _).map {
-      sym => sym.name.toString -> tpe.member(sym.name).asMethod.returnType
-    }
-  }
-
-  def instantiate(clazz: java.lang.Class[_])(args:AnyRef*): AnyRef = {
-    val constructor = clazz.getConstructors()(0)
-    constructor.newInstance(args:_*).asInstanceOf[AnyRef]
-  }
-
- // println(instantiate(classOf[AuthRequest])("someId"))
- val req = "{\"requestType\":100,\"requestData\":{\"googleId\":\"100500\", \"id\":100, \"fl\":100.125},\"securityToken\":null}"
+  val req = "{\"requestType\":100,\"requestData\":{\"googleId\":\"100500\"},\"securityToken\":null}"
 
   val gr: GenericRequest = JsonMapper.parseRequest(req)
-//  println(gr.requestData)
-  println(JsonMapper.convert[AuthRequest](gr.requestData, classOf[AuthRequest]))
-//  val ars = Array[AnyRef]("Foobar")
-//  val constructor = classOf[AuthRequest].getConstructors()(0)
-//  println(constructor)
-//  println(caseClassParamsOf[AuthRequest])
+
+  //println(JsonMapper.convert[AuthRequest](gr.requestData, classOf[AuthRequest]))
+
+  val data = new Data()
+  data.processParsing(gr.requestData)
+  data.print()
 }
+
+class Data {
+  @RequestData(classOf[AuthRequest])
+  var auth: AuthRequest = _
+
+  def print() {
+    println(auth)
+  }
+
+  def processParsing(data: Any) {
+    val clazz = getClass
+
+    for (field <- clazz.getDeclaredFields) {
+      if (field.isAnnotationPresent(Data)) {
+        field.setAccessible(true)
+        println(field.getAnnotation(classOf[RequestData]).value)
+        val res = JsonMapper.convert(data, field.getAnnotation(classOf[RequestData]).value)
+        field.set(this, res)
+      }
+    }
+  }
+}
+
+
+

@@ -60,4 +60,6 @@ case object JsonMapper extends ObjectMapper {
       case "Double" => data.asInstanceOf[java.lang.Double]
     }
   }
+
+
 }

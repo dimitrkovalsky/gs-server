@@ -1,21 +1,22 @@
 package com.liberty.processing
 
-import akka.actor.Actor
 import com.liberty.validation.Validatable
 import com.liberty.requests.{GenericRequest, AuthRequest}
-import com.codahale.jerkson.Json
 import com.liberty.errors.Error
 import com.liberty.responses.Authenticated
 import java.util.UUID
 import org.bson.types.ObjectId
 import com.liberty.helpers.JsonMapper
+import com.liberty.annotation.RequestData
 
 /**
  * User: Dimitr
  * Date: 06.01.14
  * Time: 11:45
  */
-class AuthenticationActor extends CommandActor with Validatable {
+class AuthenticationActor extends CommandActor {
+
+  @RequestData
   var auth: AuthRequest = _
 
   def handleSuccess(): Unit = {}
@@ -37,7 +38,7 @@ class AuthenticationActor extends CommandActor with Validatable {
   }
 
 
-  override def validate(request: GenericRequest): Unit = {
-    auth = JsonMapper.convertValue(request.requestData, classOf[AuthRequest])
-  }
+  //  override def validate(request: GenericRequest): Unit = {
+  //    auth = JsonMapper.convertValue(request.requestData, classOf[AuthRequest])
+  //  }
 }

@@ -5,6 +5,9 @@ import xitrum.Log
 import com.liberty.validation.Validatable
 import com.liberty.errors.Error
 import com.codahale.jerkson.ParsingException
+import com.liberty.annotation.{RequestData, Handler}
+import com.liberty.helpers.JsonMapper
+import com.liberty.requests.AuthRequest
 
 /**
  * User: Dimitr
@@ -18,6 +21,7 @@ trait CommandActor extends Actor with Log {
 
     case processing: ProcessingMessage =>
       try {
+        processParsing(processing.request.requestData)
         this match {
           case validatable: Validatable => validatable.validate(processing.request)
         }
@@ -31,6 +35,16 @@ trait CommandActor extends Actor with Log {
     case any: Any => log.warn(s"[${this.getClass.getName}] received unexpected message : " + any)
   }
 
+  def processParsing(data: Any) {
+    val clazz = getClass
+
+    for (field <- clazz.getDeclaredFields) {
+      if (field.isAnnotationPresent(classOf[RequestData])) {
+        field.setAccessible(true)
+      //  field.set(this, JsonMapper.convert[field.type](data, classOf[field.type]))
+      }
+    }
+  }
 
   def handleSuccess()
 

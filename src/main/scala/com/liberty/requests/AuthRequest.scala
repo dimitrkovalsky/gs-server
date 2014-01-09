@@ -7,7 +7,7 @@ import scala.beans.BeanProperty
  * Date: 07.01.14
  * Time: 16:09
  */
-case class AuthRequest(@BeanProperty googleId: String) {
+case class AuthRequest(googleId: String) {
  // def this() = this("")
 }
 
