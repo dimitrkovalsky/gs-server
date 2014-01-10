@@ -1,6 +1,6 @@
 package com.liberty.responses
 
-import com.fasterxml.jackson.annotation.JsonIgnore
+import com.fasterxml.jackson.annotation.{JsonIgnoreProperties, JsonIgnore}
 import org.bson.types.ObjectId
 
 /**
@@ -9,6 +9,7 @@ import org.bson.types.ObjectId
  * Time: 20:31
  */
 
+@JsonIgnoreProperties(Array("internalId", "externalId"))
 case class Authenticated(securityToken: String,
-                          @JsonIgnore internalId: ObjectId,
-                          @JsonIgnore externalId: String) {}
+                         internalId: ObjectId,
+                         externalId: String) {}

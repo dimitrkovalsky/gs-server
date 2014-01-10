@@ -2,7 +2,7 @@ package com.liberty.processing
 
 import akka.actor.{Props, ActorRef, Actor}
 import com.liberty.errors.Error
-import com.codahale.jerkson.{ParsingException, Json}
+import com.codahale.jerkson.ParsingException
 import com.liberty.validation.PacketValidator
 import scala.concurrent.duration._
 import com.liberty.responses.GenericResponse
@@ -25,6 +25,7 @@ import com.liberty.helpers.JsonMapper
 class Interpreter(front: ActorRef, session: Session) extends Actor with PacketValidator with Log {
   implicit val execution = context.system.dispatcher
   var processing = Map.empty[Long, OnProcessing]
+  var permanents: List[ActorRef] = Nil
 
   var _idCounter = 0L
 
@@ -38,9 +39,9 @@ class Interpreter(front: ActorRef, session: Session) extends Actor with PacketVa
   def receive: Actor.Receive = {
     case raw: RawMessage => processMessage(raw)
 
-    case auth: Authenticated =>
-      setSession(auth)
-      front ! GenericResponse.authenticatedResponse(auth)
+    case auth: AuthenticatedAck => handleAuth(auth)
+
+    case permanent: PermanentActorAck => handlePermanent(permanent)
 
     case ack: ProcessingAck => handleSuccess(ack)
 
@@ -62,7 +63,7 @@ class Interpreter(front: ActorRef, session: Session) extends Actor with PacketVa
         respondError(Error.invalidCommandPacket, message.startProcessingTime)
         return
       }
-      val request =  JsonMapper.parseRequest(message.data)
+      val request = JsonMapper.parseRequest(message.data)
       val gameSession = getSession
 
       if (!validateAuthentication(request))
@@ -83,9 +84,10 @@ class Interpreter(front: ActorRef, session: Session) extends Actor with PacketVa
   }
 
   override def postStop() {
-    log.debug("[Interpreter] onClose")
-    context.children.foreach(context.stop)
     super.postStop()
+    log.debug("[Interpreter] onClose")
+    processing.values.foreach(v => context.stop(v.processor))
+    permanents.foreach(context.stop)
   }
 
   def sendMessage(ref: ActorRef, msg: ProcessingMessage) {
@@ -104,11 +106,35 @@ class Interpreter(front: ActorRef, session: Session) extends Actor with PacketVa
   }
 
   def handleSuccess(ack: ProcessingAck) {
+    handleSuccess(ack.id, ack.result)
+  }
+
+  def handleSuccess(id: Long, result: GenericResponse) {
+    processing.get(id).foreach {
+      prc =>
+        processing -= id
+        context.stop(prc.processor)
+        front ! ProcessingCompleted(result, prc.startTime)
+    }
+  }
+
+  def handleSuccess(id: Long)(handler: OnProcessing => Unit) {
+    processing.get(id).foreach {
+      prc =>
+        processing -= id
+        handler(prc)
+    }
+  }
+
+  def handleAuth(authAck: AuthenticatedAck) {
+    handleSuccess(authAck.id, GenericResponse.authenticatedResponse(authAck.auth))
+  }
+
+  def handlePermanent(ack: PermanentActorAck) {
     processing.get(ack.id).foreach {
       prc =>
         processing -= ack.id
-        context.stop(prc.processor)
-        front ! ProcessingCompleted(ack.result, prc.startTime)
+        permanents = permanents :+ prc.processor
     }
   }
 

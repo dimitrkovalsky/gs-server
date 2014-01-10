@@ -1,11 +1,8 @@
 package com.liberty
 
 import com.liberty.requests.{GenericRequest, AuthRequest}
-import scala.reflect.runtime.universe._
-import scala.collection.immutable.ListMap
 import com.liberty.helpers.JsonMapper
-import com.liberty.annotation.{Handler, RequestData,}
-import com.liberty.annotation.Data
+import com.liberty.annotation.RequestData
 
 /**
  * User: Dimitr
@@ -18,11 +15,11 @@ object Runner extends App {
 
   val gr: GenericRequest = JsonMapper.parseRequest(req)
 
-  //println(JsonMapper.convert[AuthRequest](gr.requestData, classOf[AuthRequest]))
+  println(JsonMapper.convert[AuthRequest](gr.requestData, classOf[AuthRequest]))
 
-  val data = new Data()
-  data.processParsing(gr.requestData)
-  data.print()
+//  val data = new Data()
+//  data.processParsing(gr.requestData)
+//  data.print()
 }
 
 class Data {
@@ -36,14 +33,15 @@ class Data {
   def processParsing(data: Any) {
     val clazz = getClass
 
-    for (field <- clazz.getDeclaredFields) {
-      if (field.isAnnotationPresent(Data)) {
-        field.setAccessible(true)
-        println(field.getAnnotation(classOf[RequestData]).value)
-        val res = JsonMapper.convert(data, field.getAnnotation(classOf[RequestData]).value)
-        field.set(this, res)
-      }
-    }
+
+    //    for (field <- clazz.getDeclaredFields) {
+    //      if (field.isAnnotationPresent(Data)) {
+    //        field.setAccessible(true)
+    //        println(field.getAnnotation(classOf[RequestData]).value)
+    //        val res = JsonMapper.convert(data, field.getAnnotation(classOf[RequestData]).value)
+    //        field.set(this, res)
+    //      }
+    //    }
   }
 }
 

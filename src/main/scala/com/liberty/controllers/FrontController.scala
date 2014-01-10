@@ -5,7 +5,7 @@ import xitrum.WebSocketText
 import xitrum.annotation.WEBSOCKET
 import com.liberty.errors.Error
 import akka.actor.{Props, ActorRef}
-import com.liberty.responses.GenericResponse
+import com.liberty.responses.{ServerResponse, GenericResponse}
 import com.codahale.jerkson.Json
 
 /**
@@ -28,6 +28,8 @@ class FrontController extends WebSocketActor {
           interpreter ! RawMessage(self, data, System.currentTimeMillis())
 
         case ProcessingCompleted(resp, time) => respond(resp.copy(pst = System.currentTimeMillis() - time))
+
+        case msg: PermanentMessage => respond(msg.result)
 
         case msg: Any => log.warn("[FrontController] unknown message : " + msg)
       }
@@ -54,7 +56,7 @@ class FrontController extends WebSocketActor {
     respond(GenericResponse.errorResponse(err))
   }
 
-  def respond(response: GenericResponse) {
+  def respond(response: ServerResponse) {
     log.info("RESPONSE >>>>>>" + Json.generate(response))
     respondWebSocketText(Json.generate(response))
   }

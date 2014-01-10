@@ -14,7 +14,11 @@ case object JsonMapper extends ObjectMapper {
   configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false)
 
   def parseRequest(request: String): GenericRequest = {
-    this.readValue[GenericRequest](request, classOf[GenericRequest])
+    val result = this.readValue[GenericRequest](request, classOf[GenericRequest])
+    if (result.securityToken == null)
+      result.copy(securityToken = None)
+    else
+      result
   }
 
   private def caseClassParamsOf[T: TypeTag]: ListMap[String, Type] = {
@@ -39,7 +43,7 @@ case object JsonMapper extends ObjectMapper {
   def instantiate[T](clazz: java.lang.Class[T])(args: Array[AnyRef]): T = {
     val constructor = clazz.getConstructors()(0)
 
-    constructor.newInstance(args:_*).asInstanceOf[T]
+    constructor.newInstance(args: _*).asInstanceOf[T]
   }
 
   def convert[T: TypeTag](data: Any, clazz: java.lang.Class[T]) = {
@@ -47,12 +51,12 @@ case object JsonMapper extends ObjectMapper {
     val params = caseClassParamsOf[T]
     var args = Array[AnyRef]()
     for (key <- params.keys) {
-      args = args ++ Array(init(params(key).toString, map.get(key)))
+      args = args ++ Array(initialize(params(key).toString, map.get(key)))
     }
     instantiate[T](clazz)(args)
   }
 
-  private def init(symbol: String, data: AnyRef): AnyRef = {
+  private def initialize(symbol: String, data: AnyRef): AnyRef = {
     symbol match {
       case "String" => data.asInstanceOf[String]
       case "Int" => data.asInstanceOf[Integer]

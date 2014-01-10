@@ -1,4 +1,4 @@
-package com.liberty.processing
+package com.liberty.actors
 
 import com.liberty.validation.Validatable
 import com.liberty.requests.{GenericRequest, AuthRequest}
@@ -8,29 +8,27 @@ import java.util.UUID
 import org.bson.types.ObjectId
 import com.liberty.helpers.JsonMapper
 import com.liberty.annotation.RequestData
+import com.liberty.processing.{AuthenticatedAck, CommandActor}
 
 /**
  * User: Dimitr
  * Date: 06.01.14
  * Time: 11:45
  */
-class AuthenticationActor extends CommandActor {
+class AuthenticationActor extends CommandActor with Validatable {
 
-  @RequestData
   var auth: AuthRequest = _
 
-  def handleSuccess(): Unit = {}
-
-
-  def handle(message: ProcessingMessage): Unit = {
+  def handle(): Unit = {
     if (!validateGoogleId(auth.googleId)) {
-      handleFail(message, Error.validationError("Google id is invalid : " + auth.googleId))
+      respondFail(Error.validationError("Google id is invalid : " + auth.googleId))
       return
     }
 
     val sk = UUID.randomUUID().toString
     val authResult = Authenticated(sk, new ObjectId(), auth.googleId)
-    sender ! authResult
+
+    requester ! AuthenticatedAck(requestId, authResult)
   }
 
   def validateGoogleId(googleId: String): Boolean = {
@@ -38,7 +36,7 @@ class AuthenticationActor extends CommandActor {
   }
 
 
-  //  override def validate(request: GenericRequest): Unit = {
-  //    auth = JsonMapper.convertValue(request.requestData, classOf[AuthRequest])
-  //  }
+  override def validate(request: GenericRequest): Unit = {
+    auth = JsonMapper.convert(request.requestData, classOf[AuthRequest])
+  }
 }
