@@ -13,7 +13,7 @@
 </head>
 
 <body>
-<h1>Global strategy</h1>
+<h1>Some another </h1>
 
 
 
@@ -26,31 +26,8 @@
 
 
 <script>
-    var socket = new WebSocket("ws://localhost:8000/backend");
-    socket.onopen = function () {
-        showMessage("Connection established");
-    };
-
-    socket.onclose = function (event) {
-        if (event.wasClean) {
-            showMessage('Connection close ok');
-        } else {
-            showMessage('Connection fail');
-        }
-        showMessage('Code: ' + event.code + ' reason: ' + event.reason);
-    };
-
-    socket.onerror = function (error) {
-        showMessage("Error " + error.message);
-    };
 
 
-//    document.forms.Authenticate.onsubmit = function () {
-//        var outgoingMessage = this.message.value;
-//
-//        socket.send(outgoingMessage);
-//        return false;
-//    };
     document.forms.Authenticate.onsubmit = function () {
         var request = new RequestObject();
 
