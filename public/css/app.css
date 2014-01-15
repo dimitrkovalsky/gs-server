@@ -4,22 +4,21 @@ a {
 }
 
 body {
-    font-family: arial;
     font-size: 14px;
-
+    margin-left: 5px;
 }
 
 h1 {
     font: 32px Georgia, "Times New Roman";
     position: relative;
     color: #0094D6;
-    margin: 10px 0;
-    padding: 0;
+    margin-top: 0px;
+    margin-left: -5px;
+    padding-left: 5px;
     background-color: #f0f4f0
 }
 
 .error {
-    font-family: arial;
     color: red;
     font-size: 12px;
     font-weight: bold;
@@ -27,9 +26,22 @@ h1 {
 }
 
 .success {
-    font-family: arial;
     color: #00eb00;
     font-size: 12px;
     font-weight: bold;
+}
+
+.status-fail{
+    color: red;
+    font-size: 14px;
+    font-weight: bold;
+    margin: 5px;
+}
+
+.status-completed{
+    color: limegreen;
+    font-size: 14px;
+    font-weight: bold;
+    margin: 5px;
 }
 
