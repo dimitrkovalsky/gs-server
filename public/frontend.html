@@ -6,53 +6,48 @@
     <title>Frontend</title>
     <link href="css/bootstrap.css" rel="stylesheet">
     <link href="css/app.css" rel="stylesheet">
-    <script src="js/jquery.min.js"></script>
-    <script src="js/bootstrap.min.js"></script>
-    <script src="js/communication.js"></script>
-    <script src="js/requests.js"></script>
+
+
 </head>
 
 <body>
 <h1>Global Strategy </h1>
 
-    <div id = "connection_status" class="status-fail">Not connected </div>
-    <div id = "auth_status" class="status-fail">Not authenticated </div>
+<div id="statuses"></div>
 
+
+<form name="Connect">
+    <input type="submit" class="btn" value="Connect"/>
+</form>
 <form name="Authenticate">
-    <input type="text" name="id" value="100500"/>
+    <input type="text" id="google_id" value="100500"/>
     <input type="submit" class="btn" value="Authenticate"/>
 </form>
 
-<div id="subscribe"></div>
-
+<div id="history"></div>
 
 <script>
 
 
     document.forms.Authenticate.onsubmit = function () {
-        var request = new RequestObject();
-
-        request.setRequestType(RT_AUTHENTICATE);
-        request.setRequestData({googleId: this.id.value});
-
-        var jsonRequest = toJson(request);
-
-        showMessage("send : " + jsonRequest);
-        socket.send(jsonRequest);
+        sendAuth();
         return false;
     };
-    socket.onmessage = function (event) {
-        var incomingMessage = event.data;
-        showMessage(incomingMessage);
-    };
 
-    function showMessage(message) {
-        var messageElem = document.createElement('div');
-        messageElem.appendChild(document.createTextNode(message));
-        document.getElementById('subscribe').appendChild(messageElem);
-    }
+    document.forms.Connect.onsubmit = function () {
+        window.communicator = new GS.Models.Communicator();
+        return false;
+    };
 
 
 </script>
+
+<script src="js/jquery-2.0.3.js"></script>
+<script type="text/javascript" src="js/underscore.js"></script>
+<script type="text/javascript" src="js/backbone.js"></script>
+<script src="js/bootstrap.min.js"></script>
+<script src="js/models.js"></script>
+<script src="js/requests.js"></script>
+<script src="js/communication.js"></script>
 </body>
 </html>

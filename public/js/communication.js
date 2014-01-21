@@ -4,83 +4,32 @@
  * Time: 20:13
  */
 
-function RequestObject() {
-    this.requestType = 0;
-    this.requestData = null;
-    this.securityToken = null;
-
-    this.setSecurityToken = function (secToken) {
-        this.securityToken = secToken;
-    };
-
-    this.setRequestType = function (requestType) {
-        this.requestType = requestType;
-    };
-
-    this.setRequestData = function (requestData) {
-        this.requestData = requestData;
-    };
+function initStatuses() {
+    window.connection_status = new GS.Models.Status({message: "connected", status: false});
+    window.auth_status = new GS.Models.Status({message: "authenticated", status: false});
+    var statusesView = new GS.Views.Statuses({collection: new GS.Collections.Statuses([window.connection_status, window.auth_status])});
+    $("#statuses").html(statusesView.render().el);
 }
 
-var socket = new WebSocket("ws://localhost:8000/backend");
-socket.onopen = function () {
-    showMessage("Connection established");
-};
-
-socket.onclose = function (event) {
-    if (event.wasClean) {
-        showMessage('Connection close ok');
-    } else {
-        showMessage('Connection fail');
-    }
-    showMessage('Code: ' + event.code + ' reason: ' + event.reason);
-};
-
-socket.onerror = function (error) {
-    showMessage("Error " + error.message);
-};
-
-
-
-function toJson(object) {
-    return JSON.stringify(object);
+function initHistory() {
+    window.history = new GS.Collections.History();
+    $("#history").html(new GS.Views.History({collection: window.history}).render().el);
 }
 
-function fromJson(encoded) {
-    return JSON.parse(encoded);
+
+(function () {
+    initStatuses();
+    initHistory();
+}());
+
+function sendAuth() {
+    if (!window.connection_status.isSuccess()) {
+        window.history.addError("Connection doesn't established");
+        return;
+    }
+
+    var request = new GS.Models.GenericRequest();
+    request.setRequestType(RT_AUTHENTICATE);
+    request.setRequestData({googleId: $('#google_id').val()});
+    window.communicator.send(request);
 }
-
-var UserSession = Backbone.Model.extend({
-    defaults: {
-        securityToken: null
-    },
-
-    getToken: function () {
-        return this.get("securityToken")
-    }
-});
-
-var GenericRequest = Backbone.Model.extend({
-    defaults: {
-        requestType: 0,
-        requestData: null,
-        securityToken: null
-    },
-
-    setSecurityToken: function (secToken) {
-        this.securityToken = secToken;
-    },
-
-    setRequestType: function (requestType) {
-        this.requestType = requestType;
-    },
-
-    setRequestData: function (requestData) {
-        this.set("requestData", requestData);
-    },
-
-    send: function () {
-        return this.get("name") + " is working";
-    }
-
-});
