@@ -214,10 +214,13 @@
                 window.auth_status.setFail();
             };
 
-            this.getSocket().onmessage = function (event) {
+            handleMessage:function (event) {
                 var incomingMessage = event.data;
                 window.history.addResponse(incomingMessage);
-            };
+                window.interpreter.handleServerResponse(new GS.Models.ServerResponse(fromJson(incomingMessage)));
+            }
+
+            this.getSocket().onmessage = handleMessage();
         },
 
         toJson: function (object) {
@@ -241,4 +244,31 @@
             this.getSocket().send(jsonRequest);
         }
     });
+
+    GS.Models.ServerResponse = Backbone.Model.extend({
+//        initialize: function () {
+//            this.responseStatus = this.get('responseStatus');
+//            this.requestType = this.get('requestType');
+//            this.responseType = this.get('responseType');
+//            this.responseData = this.get('responseData');
+//            this.processingTime = this.get('pst');
+//        },
+
+        getResponseStatus: function () {
+            return  this.get('responseStatus');
+        },
+
+        getRequestType: function () {
+            return this.get('requestType');
+        },
+        getResponseType: function () {
+            return this.get('responseType');
+        },
+        getResponseData: function () {
+            return this.get('responseData');
+        },
+        getProcessingTime: function () {
+            return this.processingTime;
+        }
+    })
 }());

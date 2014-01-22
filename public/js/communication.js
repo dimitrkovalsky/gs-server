@@ -20,6 +20,7 @@ function initHistory() {
 (function () {
     initStatuses();
     initHistory();
+    window.interpreter = new GS.Handlers.Interpreter();
 }());
 
 function sendAuth() {
